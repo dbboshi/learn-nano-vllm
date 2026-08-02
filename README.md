@@ -1,12 +1,4 @@
-<p align="center">
-<img width="300" src="assets/logo.png">
-</p>
-
-<p align="center">
-<a href="https://trendshift.io/repositories/15323" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15323" alt="GeeeekExplorer%2Fnano-vllm | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-</p>
-
-# Nano-vLLM
+# Learning notes of Nano-vLLM
 
 A lightweight vLLM implementation built from scratch.
 
@@ -18,9 +10,50 @@ A lightweight vLLM implementation built from scratch.
 
 ## Installation
 
+Nano-vLLM 提供两种安装方式。
+
+### 方式一:通过 `pyproject.toml` 安装(原版,需 Ampere / sm>=80 GPU)
+
 ```bash
 pip install git+https://github.com/GeeeekExplorer/nano-vllm.git
 ```
+
+> 该方式按 `pyproject.toml` 安装全部依赖,包含 `flash-attn` 与 `triton`,
+> 二者仅支持 sm>=80 的 GPU;在老 GPU(如 RTX 2060 / Turing sm75)上会安装失败。
+
+### 方式二:通过 `requirements.txt` 安装(推荐老 GPU / Windows 用户)
+
+自当前版本(commit `b1b57e2`,本地老 GPU 适配)起,注意力层([`nanovllm/layers/attention.py`](nanovllm/layers/attention.py))新增 SDPA
+(PyTorch `scaled_dot_product_attention`)回退后端:运行时若检测到 GPU 算力 < 8.0 或缺少
+`flash-attn` / `triton`,会自动走 SDPA 路径,功能与 FA2 路径一致(速度略慢)。
+因此老 GPU 用户可跳过 `flash-attn` / `triton`,仅安装必需依赖:
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/GeeeekExplorer/nano-vllm.git
+cd nano-vllm
+
+# 2. (可选)新建 conda 环境(Python 要求 >=3.10,<3.13)
+conda create -n nanovllm python=3.10 -y
+conda activate nanovllm
+
+# 3. 安装必需依赖(不含 flash-attn / triton,适配 sm<80 老 GPU)
+pip install -r requirements.txt
+
+# 4. 仅当你的 GPU 为 Ampere(sm>=80)且需要 FA2 加速时,再装可选依赖:
+#    pip install "triton>=3.0.0" flash-attn
+#    (Windows 上官方 triton 不可用,改用: pip install triton-windows)
+```
+
+**两种方式依赖对照**(参考 `pyproject.toml` 与 conda `nanovllm` 环境实测版本):
+
+| 依赖包          | pyproject.toml | requirements.txt(必需) | 可选(FA2 加速) | 本机 nanovllm 实测版本，可运行 |
+|-----------------|----------------|------------------------|-----------------|------------------------|
+| torch           | >=2.4.0        | >=2.4.0                | —               | 2.6.0+cu126            |
+| transformers    | >=4.51.0       | >=4.51.0               | —               | 5.14.1                 |
+| xxhash          | *              | *                      | —               | 3.8.1                  |
+| triton          | >=3.0.0        | —                      | >=3.0.0         | triton-windows 3.2.0   |
+| flash-attn      | *              | —                      | *               | 2.7.4                  |
 
 ## Model Download
 

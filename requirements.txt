@@ -1,0 +1,23 @@
+# nano-vllm 依赖列表(requirements 安装方式)
+# ----------------------------------------------------------------------
+# 背景:自 v0.2.0 起,注意力层(nanovllm/layers/attention.py)新增 SDPA
+#   (PyTorch scaled_dot_product_attention)回退后端。运行时若检测到
+#   GPU 算力 < 8.0(如 RTX 2060 / Turing sm75)或缺少 flash-attn / triton,
+#   会自动走 SDPA 路径,功能与 FA2 路径一致(速度略慢)。
+#   因此 flash-attn 与 triton 现为【可选】,老 GPU / Windows 用户可跳过。
+#
+# 版本基线取自 conda "nanovllm" 环境(Python 3.10.20 / RTX 2060 sm75 实测可用):
+#   torch 2.6.0+cu126, transformers 5.14.1, xxhash 3.8.1
+# Python 版本要求同 pyproject.toml:>=3.10,<3.13
+# ----------------------------------------------------------------------
+
+# === 必需依赖(所有 GPU 都需要)===
+torch>=2.4.0
+transformers>=4.51.0
+xxhash
+
+# === 可选依赖:FlashAttention 2 加速(仅 Ampere / sm>=80 及以上 GPU)===
+# sm<80 的老 GPU 请保持下面两行注释;SDPA 回退路径已可正确运行。
+# Windows 上官方 triton 不可用,可改装 triton-windows;flash-attn 需预编译轮子。
+# triton>=3.0.0
+# flash-attn
