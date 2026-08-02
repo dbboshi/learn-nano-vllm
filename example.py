@@ -4,14 +4,16 @@ from transformers import AutoTokenizer
 
 
 def main():
-    path = os.path.expanduser("~/huggingface/Qwen3-0.6B/")
+    path = r"D:\Code\models\Qwen3-0.6B"
     tokenizer = AutoTokenizer.from_pretrained(path)
-    llm = LLM(path, enforce_eager=True, tensor_parallel_size=1)
+    llm = LLM(path, enforce_eager=True, tensor_parallel_size=1,
+              max_num_batched_tokens=2048, max_model_len=1024)
 
     sampling_params = SamplingParams(temperature=0.6, max_tokens=256)
     prompts = [
         "introduce yourself",
-        "list all prime numbers within 100",
+        "list all prime numbers within 10",
+        "solve: x^2 + 2x + 1 = 0, x=?",
     ]
     prompts = [
         tokenizer.apply_chat_template(
